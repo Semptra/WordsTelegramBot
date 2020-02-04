@@ -1,4 +1,4 @@
-﻿namespace WordsTelegramBot.Api.Configuration
+﻿namespace WordsTelegramBot.Worker.Configuration
 {
     public class WordsBotConfiguration
     {
