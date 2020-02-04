@@ -1,25 +1,41 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using WordsTelegramBot.Api.Configuration;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace WordsTelegramBot.Api.Services
 {
     public class TelegramBotService : ITelegramBotService
     {
-        private readonly WordsBotConfiguration _wordsBotConfiguration;
-
         private readonly ILogger _logger;
 
-        public TelegramBotService(IOptions<WordsBotConfiguration> configuration, ILogger<TelegramBotService> logger)
+        private readonly ITelegramBotClient _telegramBotClient;
+
+        public TelegramBotService(ILogger<TelegramBotService> logger, ITelegramBotClient telegramBotClient)
         {
-            _wordsBotConfiguration = configuration.Value;
+            _telegramBotClient = telegramBotClient;
             _logger = logger;
         }
 
-        public async Task ProcessUpdatesAsync()
+        public Task<WebhookInfo> GetWebhookInfoAsync()
+        {
+            return _telegramBotClient.GetWebhookInfoAsync();
+        }
+
+        public Task SetWebhookAsync(string url)
+        {
+            return _telegramBotClient.SetWebhookAsync(url);
+        }
+
+        public Task DeleteWebhookAsync()
+        {
+            return _telegramBotClient.DeleteWebhookAsync();
+        }
+
+        public async Task ProcessUpdateAsync(Update update)
         {
             _logger.LogInformation("ProcessUpdatesAsync called");
+            _logger.LogInformation("Processing update: {0}", update.Id);
         }
     }
 }

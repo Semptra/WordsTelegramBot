@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Telegram.Bot;
 using WordsTelegramBot.Api.Configuration;
 using WordsTelegramBot.Api.Services;
 
@@ -34,7 +35,10 @@ namespace WordsTelegramBot.Api
                 .CreateLogger();
 
             services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger));
-            //services.AddDbContext<AzureDbContext>();
+
+            services.AddSingleton<ITelegramBotClient>(_ =>
+                new TelegramBotClient(Configuration.GetSection("WordsBotConfiguration").GetValue<string>("TelegramApiToken")));
+
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
         }
 
