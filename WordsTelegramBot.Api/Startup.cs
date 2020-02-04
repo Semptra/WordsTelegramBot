@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -40,6 +41,11 @@ namespace WordsTelegramBot.Api
                 new TelegramBotClient(Configuration.GetSection("WordsBotConfiguration").GetValue<string>("TelegramApiToken")));
 
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
