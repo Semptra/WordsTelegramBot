@@ -24,6 +24,7 @@ namespace WordsTelegramBot.Api.Services
 
         public Task SetWebhookAsync(string url)
         {
+            _logger.LogInformation("Trying to set webhook to {0}", url);
             return _telegramBotClient.SetWebhookAsync(url);
         }
 
