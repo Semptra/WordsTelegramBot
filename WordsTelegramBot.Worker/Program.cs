@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using WordsTelegramBot.Worker.Configuration;
 using WordsTelegramBot.Worker.Services;
 using WordsTelegramBot.Worker.Workers;
@@ -17,10 +18,6 @@ namespace WordsTelegramBot.Worker
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseKestrel(options => options.ListenAnyIP(int.Parse(System.Environment.GetEnvironmentVariable("PORT"))));
-                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services

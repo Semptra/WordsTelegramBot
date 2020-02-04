@@ -1,4 +1,6 @@
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -13,16 +15,21 @@ namespace WordsTelegramBot.Worker.Workers
 
         private readonly ITelegramBotService _telegramBotService;
 
+        private readonly TcpListener _listener;
+
         private Timer _timer;
 
         public TelegramBotWorker(ILogger<TelegramBotWorker> logger, ITelegramBotService telegramBotService)
         {
             _logger = logger;
             _telegramBotService = telegramBotService;
+            _listener = new TcpListener(IPAddress.Any, int.Parse(Environment.GetEnvironmentVariable("PORT")));
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _listener.Start();
+
             _logger.LogInformation("Timed Hosted Service running.");
 
             await _telegramBotService.SetupAsync();
