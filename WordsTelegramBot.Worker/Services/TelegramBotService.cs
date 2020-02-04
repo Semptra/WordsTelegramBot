@@ -30,8 +30,12 @@ namespace WordsTelegramBot.Worker.Services
         public async Task ProcessUpdatesAsync()
         {
             var updates = await _telegramBotClient.GetUpdatesAsync();
-            _logger.LogInformation("ProcessUpdatesAsync called");
             _logger.LogInformation("Updates count: {0}", updates.Length);
+
+            foreach(var update in updates)
+            {
+                _logger.LogInformation("Id: {0}. Message: {1}", update.Id, update.Message.Text ?? "<empty>");
+            }
         }
     }
 }

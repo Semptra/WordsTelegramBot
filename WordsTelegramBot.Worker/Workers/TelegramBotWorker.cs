@@ -49,6 +49,8 @@ namespace WordsTelegramBot.Worker.Workers
 
             _timer?.Change(Timeout.Infinite, 0);
 
+            _listener.Stop();
+
             return Task.CompletedTask;
         }
 
