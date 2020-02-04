@@ -33,6 +33,12 @@ namespace WordsTelegramBot.Api.Controllers
             }
         }
 
+        [HttpPost("updateplain")]
+        public async Task UpdatePlain([FromBody]string update)
+        {
+            _logger.LogInformation("Update: {0}", update);
+        }
+
         [HttpGet("webhook/info")]
         public async Task<WebhookInfo> GetWebhookInfo()
         {
