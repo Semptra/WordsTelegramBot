@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using WordsTelegramBot.Worker.Configuration;
 using WordsTelegramBot.Worker.Services;
 using WordsTelegramBot.Worker.Workers;
@@ -17,6 +17,10 @@ namespace WordsTelegramBot.Worker
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseKestrel(options => options.ListenAnyIP(int.Parse(System.Environment.GetEnvironmentVariable("PORT"))));
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services
@@ -26,11 +30,7 @@ namespace WordsTelegramBot.Worker
                             configuration.GetSection("WordsBotConfiguration").Bind(messageResponderSettings);
                         });
 
-                    var logger = new LoggerConfiguration()
-                        .WriteTo.Console()
-                        .CreateLogger();
-
-                    services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger));
+                    services.AddLogging();
                     services.AddSingleton<ITelegramBotService, TelegramBotService>();
                     services.AddHostedService<TelegramBotWorker>();
                 });
