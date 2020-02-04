@@ -46,8 +46,8 @@ namespace WordsTelegramBot.Api.Controllers
             return "Webhook deleted";
         }
 
-        [HttpGet("webhook/set/{url}")]
-        public async Task<string> SetWebhook(string url)
+        [HttpPost("webhook/set")]
+        public async Task<string> SetWebhook([FromBody]string url)
         {
             await _telegramBotService.SetWebhookAsync(url);
             return $"Webhook set to {url}";
