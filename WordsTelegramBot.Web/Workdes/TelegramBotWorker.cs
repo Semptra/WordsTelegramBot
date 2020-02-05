@@ -19,7 +19,7 @@ namespace WordsTelegramBot.Web.Workers
 
         private Timer _timer;
 
-        public TelegramBotWorker(ILogger logger, ITelegramBotService telegramBotService)
+        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, ITelegramBotService telegramBotService)
         {
             _logger = logger;
             _telegramBotService = telegramBotService;

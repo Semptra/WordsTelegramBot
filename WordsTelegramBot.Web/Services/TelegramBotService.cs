@@ -19,7 +19,7 @@ namespace WordsTelegramBot.Web.Services
 
         private readonly TelegramDbContext _context;
 
-        public TelegramBotService(ILogger logger, IOptions<WordsBotConfiguration> configuration, TelegramDbContext context)
+        public TelegramBotService(ILogger<TelegramBotService> logger, IOptions<WordsBotConfiguration> configuration, TelegramDbContext context)
         {
             _telegramBotClient = new TelegramBotClient(configuration.Value.TelegramApiToken);
             _logger = logger;
