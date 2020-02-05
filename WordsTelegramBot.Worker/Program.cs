@@ -1,9 +1,9 @@
-using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using WordsTelegramBot.Worker.Configuration;
+using WordsTelegramBot.Worker.Database;
 using WordsTelegramBot.Worker.Services;
 using WordsTelegramBot.Worker.Workers;
 
@@ -29,6 +29,7 @@ namespace WordsTelegramBot.Worker
 
                     services.AddLogging();
                     services.AddSingleton<ITelegramBotService, TelegramBotService>();
+                    services.AddDbContext<TelegramDbContext>();
                     services.AddHostedService<TelegramBotWorker>();
                 });
     }
