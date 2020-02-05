@@ -25,10 +25,11 @@ namespace WordsTelegramBot.Web.Controllers
             {
                 var tempFileName = file.FullName + ".tmp";
                 System.IO.File.Copy(file.FullName, tempFileName, true);
-                using (var fileStream = file.OpenRead())
+                var fileStream = file.OpenRead();
+                return new FileStreamResult(fileStream, "application/octet-stream")
                 {
-                    return new FileStreamResult(fileStream, "application/octet-stream");
-                }
+                    FileDownloadName = "TelegramDatabase.db"
+                };
             }
             else
             {
