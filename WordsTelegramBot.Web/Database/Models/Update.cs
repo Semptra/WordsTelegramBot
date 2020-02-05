@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WordsTelegramBot.Worker.Database.Models
+namespace WordsTelegramBot.Web.Database.Models
 {
     public class Update
     {

@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using WordsTelegramBot.Worker.Configuration;
-using WordsTelegramBot.Worker.Database;
+using WordsTelegramBot.Web.Configuration;
+using WordsTelegramBot.Web.Database;
 
-namespace WordsTelegramBot.Worker.Services
+namespace WordsTelegramBot.Web.Services
 {
     public class TelegramBotService : ITelegramBotService
     {

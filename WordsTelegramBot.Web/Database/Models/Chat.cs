@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WordsTelegramBot.Worker.Database.Models
+namespace WordsTelegramBot.Web.Database.Models
 {
     public class Chat
     {

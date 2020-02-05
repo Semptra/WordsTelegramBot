@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace WordsTelegramBot.Worker.Services
+namespace WordsTelegramBot.Web.Services
 {
     public interface ITelegramBotService
     {

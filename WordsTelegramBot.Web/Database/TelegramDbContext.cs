@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using WordsTelegramBot.Worker.Configuration;
-using WordsTelegramBot.Worker.Database.Models;
+using WordsTelegramBot.Web.Configuration;
+using WordsTelegramBot.Web.Database.Models;
 
-namespace WordsTelegramBot.Worker.Database
+namespace WordsTelegramBot.Web.Database
 {
     public class TelegramDbContext : DbContext
     {

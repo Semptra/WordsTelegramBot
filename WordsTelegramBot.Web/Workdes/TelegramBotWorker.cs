@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WordsTelegramBot.Worker.Services;
+using WordsTelegramBot.Web.Services;
 
-namespace WordsTelegramBot.Worker.Workers
+namespace WordsTelegramBot.Web.Workers
 {
     public class TelegramBotWorker : IHostedService, IDisposable
     {
@@ -28,28 +28,27 @@ namespace WordsTelegramBot.Worker.Workers
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _listener.Start();
-
-            _logger.LogInformation("Timed Hosted Service running.");
+            //_listener.Start();
 
             await _telegramBotService.SetupAsync();
 
             _timer = new Timer(ProcessUpdates, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+
+            _logger.LogInformation("{0} started", nameof(TelegramBotWorker));
         }
 
         private async void ProcessUpdates(object state)
         {
-            _logger.LogInformation("Running ProcessUpdates");
             await _telegramBotService.ProcessUpdatesAsync();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("TelegramBotWorker is stopping.");
-
             _timer?.Change(Timeout.Infinite, 0);
 
-            _listener.Stop();
+            //_listener.Stop();
+
+            _logger.LogInformation("{0} stopped", nameof(TelegramBotWorker));
 
             return Task.CompletedTask;
         }
