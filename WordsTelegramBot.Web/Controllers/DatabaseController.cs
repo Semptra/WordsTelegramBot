@@ -23,11 +23,12 @@ namespace WordsTelegramBot.Web.Controllers
 
             if (file.Exists)
             {
+                var tempFileName = file.FullName + ".tmp";
+                System.IO.File.Copy(file.FullName, tempFileName, true);
                 using (var fileStream = file.OpenRead())
                 {
                     return new FileStreamResult(fileStream, "application/octet-stream");
                 }
-                
             }
             else
             {
