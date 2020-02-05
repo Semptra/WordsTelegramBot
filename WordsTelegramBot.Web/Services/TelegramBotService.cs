@@ -19,7 +19,7 @@ namespace WordsTelegramBot.Web.Services
 
         private readonly TelegramDbContext _context;
 
-        public TelegramBotService(ILogger<TelegramBotService> logger, IOptions<WordsBotConfiguration> configuration, TelegramDbContext context)
+        public TelegramBotService(ILogger logger, IOptions<WordsBotConfiguration> configuration, TelegramDbContext context)
         {
             _telegramBotClient = new TelegramBotClient(configuration.Value.TelegramApiToken);
             _logger = logger;
@@ -52,8 +52,8 @@ namespace WordsTelegramBot.Web.Services
         {
             _logger.LogInformation("Start processing updates");
 
-            var lastUpdate = await _context.Updates.OrderBy(x => x.LastUpdateId).LastOrDefaultAsync();
-            var updates = await _telegramBotClient.GetUpdatesAsync(offset: lastUpdate?.LastUpdateId ?? 0);
+            var lastUpdate = await _context.Updates.SingleOrDefaultAsync();
+            var updates = await _telegramBotClient.GetUpdatesAsync(offset: lastUpdate?.LastUpdateId ?? -1);
 
             _logger.LogInformation("Found {0} new updates", updates.Length);
 
@@ -67,7 +67,7 @@ namespace WordsTelegramBot.Web.Services
             var telegramLastUpdate = updates.LastOrDefault();
             if (telegramLastUpdate != null)
             {
-                await SetLastUpdateAsync(telegramLastUpdate);
+                await SetLastUpdateAsync(telegramLastUpdate, lastUpdate);
             }
 
             _logger.LogInformation("Saving data to database...");
@@ -142,12 +142,20 @@ namespace WordsTelegramBot.Web.Services
             }
         }
 
-        private async Task SetLastUpdateAsync(Update telegramLastUpdate)
+        private async Task SetLastUpdateAsync(Update telegramLastUpdate, Database.Models.Update lastUpdate)
         {
-            _logger.LogInformation("Setting last update id to {0}...", telegramLastUpdate.Id);
+            var newLastUpdateId = telegramLastUpdate.Id + 1;
+            _logger.LogInformation("Setting last update id to {0}...", newLastUpdateId);
 
-            var lastUpdate = new Database.Models.Update { LastUpdateId = telegramLastUpdate.Id };
-            await _context.Updates.AddAsync(lastUpdate);
+            if (lastUpdate == null)
+            {
+                lastUpdate = new Database.Models.Update { LastUpdateId = newLastUpdateId };
+                await _context.Updates.AddAsync(lastUpdate);
+            }
+            else
+            {
+                lastUpdate.LastUpdateId = newLastUpdateId;
+            }
         }
     }
 }

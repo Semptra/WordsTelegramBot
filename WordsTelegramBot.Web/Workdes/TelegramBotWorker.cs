@@ -11,7 +11,7 @@ namespace WordsTelegramBot.Web.Workers
 {
     public class TelegramBotWorker : IHostedService, IDisposable
     {
-        private readonly ILogger<TelegramBotWorker> _logger;
+        private readonly ILogger _logger;
 
         private readonly ITelegramBotService _telegramBotService;
 
@@ -19,7 +19,7 @@ namespace WordsTelegramBot.Web.Workers
 
         private Timer _timer;
 
-        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, ITelegramBotService telegramBotService)
+        public TelegramBotWorker(ILogger logger, ITelegramBotService telegramBotService)
         {
             _logger = logger;
             _telegramBotService = telegramBotService;
