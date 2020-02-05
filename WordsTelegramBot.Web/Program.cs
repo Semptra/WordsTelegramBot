@@ -1,4 +1,6 @@
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -24,8 +26,18 @@ namespace WordsTelegramBot.Web
                 })
                 .UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
-                    .Enrich.FromLogContext()
+                    .Enrich.With<RemovePropertiesEnricher>()
                     .WriteTo.Console(),
                 writeToProviders: true);
+    }
+
+    class RemovePropertiesEnricher : ILogEventEnricher
+    {
+        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory _)
+        {
+            logEvent.RemovePropertyIfPresent("SourceContext");
+            logEvent.RemovePropertyIfPresent("RequestId");
+            logEvent.RemovePropertyIfPresent("RequestPath");
+        }
     }
 }
