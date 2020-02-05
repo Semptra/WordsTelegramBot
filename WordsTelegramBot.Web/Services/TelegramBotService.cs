@@ -57,8 +57,18 @@ namespace WordsTelegramBot.Web.Services
 
             _logger.LogInformation("Found {0} new updates", updates.Length);
 
+            if (updates.Length != 0)
+            {
+                await ProcessUpdatesAsync(updates, lastUpdate);
+            }
+
+            _logger.LogInformation("End processing updates");
+        }
+
+        public async Task ProcessUpdatesAsync(Update[] updates, Database.Models.Update lastUpdate)
+        {
             var i = 1;
-            foreach(var update in updates)
+            foreach (var update in updates)
             {
                 _logger.LogInformation("Processing update {0} ({1}/{2})", update.Id, i++, updates.Length);
                 await ProcessUpdateAsync(update);
@@ -72,8 +82,6 @@ namespace WordsTelegramBot.Web.Services
 
             _logger.LogInformation("Saving data to database...");
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation("End processing updates");
         }
 
         private async Task ProcessUpdateAsync(Update update)
