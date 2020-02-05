@@ -99,38 +99,15 @@ namespace WordsTelegramBot.Web.Services
                 return;
             }
 
-            var chat = await _context.Chats.FirstOrDefaultAsync(x => x.TelegramId == update.Message.Chat.Id);
-            if (chat == null)
-            {
-                _logger.LogInformation("Got message from a new chat with id {0}", update.Message.Chat.Id);
-                _logger.LogInformation("Adding chat {0} to database...", update.Message.Chat.Id);
-
-                chat = new Database.Models.Chat { TelegramId = update.Message.Chat.Id };
-                await _context.Chats.AddAsync(chat);
-            }
-
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == update.Message.From.Id);
-            if (user == null)
-            {
-                _logger.LogInformation("Got message from a new user with id {0}", update.Message.From.Id);
-                _logger.LogInformation("Adding user {0} to database...", update.Message.From.Id);
-
-                user = new Database.Models.User { TelegramId = update.Message.From.Id };
-                await _context.Users.AddAsync(user);
-            }
-
-            var chatUser = await _context.ChatUsers.FirstOrDefaultAsync(x => x.ChatId == chat.Id && x.UserId == user.Id);
-            if (chatUser == null)
-            {
-                _logger.LogInformation("Creating connection between user {0} and chat {1}...", user.TelegramId, chat.TelegramId);
-
-                chatUser = new Database.Models.ChatUser { User = user, Chat = chat };
-                await _context.ChatUsers.AddAsync(chatUser);
-            }
-
+            var chat = await GetChatAsync(update.Message.Chat.Id);
+            var user = await GetUserAsync(update.Message.From.Id);
+            var chatUser = await GetChatUserAsync(chat, user);
             var telegramWord = telegramWords.Single();
+            var chatUserWord = await _context.ChatUserWords
+                .Include(x => x.Word)
+                .Include(x => x.ChatUser)
+                .FirstOrDefaultAsync(x => x.ChatUser.ChatId == chat.Id && x.Word.Value == telegramWord);
 
-            var chatUserWord = await _context.ChatUserWords.Include(x => x.Word).FirstOrDefaultAsync(x => x.ChatUser == chatUser && x.Word.Value == telegramWord);
             if (chatUserWord == null)
             {
                 _logger.LogInformation("Got a new word {0} for user {1} in chat {2}", telegramWord, user.TelegramId, chat.TelegramId);
@@ -146,8 +123,52 @@ namespace WordsTelegramBot.Web.Services
             }
             else
             {
-                _logger.LogInformation("Word {0} already exists for user {1} in chat {2}", chatUserWord.Word.Value, user.TelegramId, chat.TelegramId);
+                _logger.LogInformation("Word {0} already exists in chat {1}", chatUserWord.Word.Value, chat.TelegramId);
             }
+        }
+
+        private async Task<Database.Models.Chat> GetChatAsync(long chatId)
+        {
+            var chat = await _context.Chats.FirstOrDefaultAsync(x => x.TelegramId == chatId);
+            if (chat == null)
+            {
+                _logger.LogInformation("Got message from a new chat with id {0}", chatId);
+                _logger.LogInformation("Adding chat {0} to database...", chatId);
+
+                chat = new Database.Models.Chat { TelegramId = chatId };
+                await _context.Chats.AddAsync(chat);
+            }
+
+            return chat;
+        }
+
+        private async Task<Database.Models.User> GetUserAsync(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == userId);
+            if (user == null)
+            {
+                _logger.LogInformation("Got message from a new user with id {0}", userId);
+                _logger.LogInformation("Adding user {0} to database...", userId);
+
+                user = new Database.Models.User { TelegramId = userId };
+                await _context.Users.AddAsync(user);
+            }
+
+            return user;
+        }
+
+        private async Task<Database.Models.ChatUser> GetChatUserAsync(Database.Models.Chat chat, Database.Models.User user)
+        {
+            var chatUser = await _context.ChatUsers.FirstOrDefaultAsync(x => x.ChatId == chat.Id && x.UserId == user.Id);
+            if (chatUser == null)
+            {
+                _logger.LogInformation("Creating connection between user {0} and chat {1}...", user.TelegramId, chat.TelegramId);
+
+                chatUser = new Database.Models.ChatUser { User = user, Chat = chat };
+                await _context.ChatUsers.AddAsync(chatUser);
+            }
+
+            return chatUser;
         }
 
         private async Task SetLastUpdateAsync(Update telegramLastUpdate, Database.Models.Update lastUpdate)
