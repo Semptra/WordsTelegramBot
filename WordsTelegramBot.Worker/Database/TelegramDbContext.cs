@@ -14,6 +14,8 @@ namespace WordsTelegramBot.Worker.Database
             _configuration = configuration.Value;
         }
 
+        public DbSet<Update> Updates { get; set; }
+
         public DbSet<Chat> Chats { get; set; }
 
         public DbSet<User> Users { get; set; }

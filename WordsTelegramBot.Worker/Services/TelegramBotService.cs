@@ -52,15 +52,26 @@ namespace WordsTelegramBot.Worker.Services
         {
             _logger.LogInformation("Start processing updates");
 
-            var updates = await _telegramBotClient.GetUpdatesAsync();
+            var lastUpdate = await _context.Updates.OrderBy(x => x.LastUpdateId).LastOrDefaultAsync();
+            var updates = await _telegramBotClient.GetUpdatesAsync(offset: lastUpdate?.LastUpdateId ?? 0);
+
             _logger.LogInformation("Found {0} new updates", updates.Length);
 
             var i = 1;
             foreach(var update in updates)
             {
-                _logger.LogInformation("End processing update {0} ({1}/{2})", update.Id, i++, updates.Length);
+                _logger.LogInformation("Processing update {0} ({1}/{2})", update.Id, i++, updates.Length);
                 await ProcessUpdateAsync(update);
             }
+
+            var telegramLastUpdate = updates.LastOrDefault();
+            if (telegramLastUpdate != null)
+            {
+                await SetLastUpdateAsync(telegramLastUpdate);
+            }
+
+            _logger.LogInformation("Saving data to database...");
+            await _context.SaveChangesAsync();
 
             _logger.LogInformation("End processing updates");
         }
@@ -129,8 +140,14 @@ namespace WordsTelegramBot.Worker.Services
             {
                 _logger.LogInformation("Word {0} already exists for user {1} in chat {2}", chatUserWord.Word.Value, user.TelegramId, chat.TelegramId);
             }
+        }
 
-            await _context.SaveChangesAsync();
+        private async Task SetLastUpdateAsync(Update telegramLastUpdate)
+        {
+            _logger.LogInformation("Setting last update id to {0}...", telegramLastUpdate.Id);
+
+            var lastUpdate = new Database.Models.Update { LastUpdateId = telegramLastUpdate.Id };
+            await _context.Updates.AddAsync(lastUpdate);
         }
     }
 }
