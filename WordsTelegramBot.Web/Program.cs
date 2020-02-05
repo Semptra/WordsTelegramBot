@@ -1,3 +1,4 @@
+using Serilog;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -20,6 +21,11 @@ namespace WordsTelegramBot.Web
                     {
                         options.ListenAnyIP(int.Parse(System.Environment.GetEnvironmentVariable("PORT")));
                     });
-                });
+                })
+                .UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
+                    .ReadFrom.Configuration(hostingContext.Configuration)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console(),
+                writeToProviders: true);
     }
 }

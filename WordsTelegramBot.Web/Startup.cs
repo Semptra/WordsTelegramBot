@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using WordsTelegramBot.Web.Database;
 using WordsTelegramBot.Web.Configuration;
 using WordsTelegramBot.Web.Services;
@@ -30,13 +29,6 @@ namespace WordsTelegramBot.Web
                 });
 
             services.AddControllers();
-
-            services.AddLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddConsole();
-            });
-
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
             services.AddDbContext<TelegramDbContext>();
             services.AddHostedService<TelegramBotWorker>();
