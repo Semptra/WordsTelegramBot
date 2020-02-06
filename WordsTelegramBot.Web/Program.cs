@@ -21,7 +21,11 @@ namespace WordsTelegramBot.Web
 
                     webBuilder.UseKestrel(options =>
                     {
-                        options.ListenAnyIP(int.Parse(System.Environment.GetEnvironmentVariable("PORT")));
+                        var port = System.Environment.GetEnvironmentVariable("PORT");
+                        if (!string.IsNullOrEmpty(port))
+                        {
+                            options.ListenAnyIP(int.Parse(port));
+                        }
                     });
                 })
                 .UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration

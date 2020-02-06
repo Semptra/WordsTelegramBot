@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -13,6 +14,8 @@ namespace WordsTelegramBot.Web.Services.Commands
     public class WordCommand : ICommand
     {
         private readonly ILogger _logger;
+
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         private readonly TelegramDbContext _context;
 
@@ -140,6 +143,11 @@ namespace WordsTelegramBot.Web.Services.Commands
             }
 
             return chatUser;
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

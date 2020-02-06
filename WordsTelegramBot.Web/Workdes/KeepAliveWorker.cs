@@ -15,15 +15,15 @@ namespace WordsTelegramBot.Web.Workers
 
         private readonly WordsBotConfiguration _configuration;
 
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private Timer _timer;
 
-        public KeepAliveWorker(ILogger<KeepAliveWorker> logger, IOptions<WordsBotConfiguration> configuration, HttpClient httpClient)
+        public KeepAliveWorker(ILogger<KeepAliveWorker> logger, IOptions<WordsBotConfiguration> configuration, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _configuration = configuration.Value;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -39,7 +39,8 @@ namespace WordsTelegramBot.Web.Workers
         {
             _logger.LogInformation("Keep alive started");
 
-            var response = await _httpClient.GetAsync(_configuration.KeepAliveUrl);
+            var httpClient = _httpClientFactory.CreateClient();
+            var response = await httpClient.GetAsync(_configuration.KeepAliveUrl);
 
             if (response.IsSuccessStatusCode)
             {

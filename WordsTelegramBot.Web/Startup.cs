@@ -13,15 +13,9 @@ namespace WordsTelegramBot.Web
 {
     public class Startup
     {
-        public Startup(IWebHostEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -29,6 +23,13 @@ namespace WordsTelegramBot.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services
+                .AddOptions<WordsBotConfiguration>()
+                .Configure<IConfiguration>((messageResponderSettings, configuration) =>
+                {
+                    configuration.GetSection("WordsBotConfiguration").Bind(messageResponderSettings);
+                });
+
             services.AddControllers();
 
             services.AddDbContext<TelegramDbContext>();
@@ -41,23 +42,23 @@ namespace WordsTelegramBot.Web
 
             #region Commands
 
-            services.AddTransient<ICommand, WordCommand>();
+            services.AddSingleton<ICommand, WordCommand>();
 
             #endregion
 
             #region Services
 
-            services.AddTransient<ITelegramBotClient>(services => new TelegramBotClient(services.GetService<WordsBotConfiguration>().TelegramApiToken));
-            services.AddTransient<IStartupService, StartupService>();
-            services.AddTransient<IMessageProcessorService, MessageProcessorService>();
+            services.AddHttpClient();
+
+            services.AddSingleton<ITelegramBotClient>(services => new TelegramBotClient(services.GetService<WordsBotConfiguration>().TelegramApiToken));
+            services.AddSingleton<IStartupService, StartupService>();
+            services.AddSingleton<IMessageProcessorService, MessageProcessorService>();
 
             #endregion
 
             #region Workers
 
             services.AddHostedService<TelegramBotWorker>();
-
-            services.AddHttpClient<KeepAliveWorker>();
             services.AddHostedService<KeepAliveWorker>();
 
             #endregion
