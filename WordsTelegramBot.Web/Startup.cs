@@ -2,18 +2,26 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot;
 using WordsTelegramBot.Web.Database;
 using WordsTelegramBot.Web.Configuration;
 using WordsTelegramBot.Web.Services;
 using WordsTelegramBot.Web.Workers;
+using WordsTelegramBot.Web.Services.Commands;
 
 namespace WordsTelegramBot.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -21,17 +29,38 @@ namespace WordsTelegramBot.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddOptions<WordsBotConfiguration>()
-                .Configure<IConfiguration>((messageResponderSettings, configuration) =>
-                {
-                    configuration.GetSection("WordsBotConfiguration").Bind(messageResponderSettings);
-                });
-
             services.AddControllers();
-            services.AddSingleton<ITelegramBotService, TelegramBotService>();
+
             services.AddDbContext<TelegramDbContext>();
+
+            #region Configuration
+
+            services.Configure<WordsBotConfiguration>(Configuration.GetSection("WordsBotConfiguration"));
+
+            #endregion
+
+            #region Commands
+
+            services.AddTransient<ICommand, WordCommand>();
+
+            #endregion
+
+            #region Services
+
+            services.AddHttpClient();
+
+            services.AddTransient<ITelegramBotClient>(services => new TelegramBotClient(services.GetService<WordsBotConfiguration>().TelegramApiToken));
+            services.AddTransient<IStartupService, StartupService>();
+            services.AddTransient<IMessageProcessorService, MessageProcessorService>();
+
+            #endregion
+
+            #region Workers
+
             services.AddHostedService<TelegramBotWorker>();
+            services.AddHostedService<KeepAliveWorker>();
+
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

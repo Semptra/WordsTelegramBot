@@ -2,10 +2,8 @@
 
 namespace WordsTelegramBot.Web.Services
 {
-    public interface ITelegramBotService
+    public interface IMessageProcessorService
     {
-        Task SetupAsync();
-
         Task ProcessUpdatesAsync();
     }
 }

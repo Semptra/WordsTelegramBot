@@ -11,6 +11,7 @@
     <Folder Include="Database\Models\" />
     <Folder Include="Services\" />
     <Folder Include="Workdes\" />
+    <Folder Include="Services\Commands\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />

@@ -1,6 +1,4 @@
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -13,42 +11,38 @@ namespace WordsTelegramBot.Web.Workers
     {
         private readonly ILogger _logger;
 
-        private readonly ITelegramBotService _telegramBotService;
+        private readonly IStartupService _startupService;
 
-        private readonly TcpListener _listener;
+        private readonly IMessageProcessorService _messageProcessorService;
 
         private Timer _timer;
 
-        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, ITelegramBotService telegramBotService)
+        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, IStartupService startupService, IMessageProcessorService messageProcessorService)
         {
             _logger = logger;
-            _telegramBotService = telegramBotService;
-            _listener = new TcpListener(IPAddress.Any, int.Parse(Environment.GetEnvironmentVariable("PORT")));
+            _startupService = startupService;
+            _messageProcessorService = messageProcessorService;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            //_listener.Start();
-
-            await _telegramBotService.SetupAsync();
+            await _startupService.SetupAsync();
 
             _timer = new Timer(ProcessUpdates, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
-            _logger.LogInformation("{0} started", nameof(TelegramBotWorker));
+            _logger.LogInformation("[{0}] started", nameof(TelegramBotWorker));
         }
 
         private async void ProcessUpdates(object state)
         {
-            await _telegramBotService.ProcessUpdatesAsync();
+            await _messageProcessorService.ProcessUpdatesAsync();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _timer?.Change(Timeout.Infinite, 0);
 
-            //_listener.Stop();
-
-            _logger.LogInformation("{0} stopped", nameof(TelegramBotWorker));
+            _logger.LogInformation("[{0}] stopped", nameof(TelegramBotWorker));
 
             return Task.CompletedTask;
         }

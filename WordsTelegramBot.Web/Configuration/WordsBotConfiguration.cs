@@ -7,5 +7,7 @@
         public string ConnectionString { get; set; }
 
         public string DatabaseFileName { get; set; }
+
+        public string KeepAliveUrl { get; set; }
     }
 }
