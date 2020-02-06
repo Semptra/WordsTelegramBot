@@ -47,8 +47,6 @@ namespace WordsTelegramBot.Web
 
             #region Services
 
-            services.AddHttpClient();
-
             services.AddTransient<ITelegramBotClient>(services => new TelegramBotClient(services.GetService<WordsBotConfiguration>().TelegramApiToken));
             services.AddTransient<IStartupService, StartupService>();
             services.AddTransient<IMessageProcessorService, MessageProcessorService>();
@@ -58,6 +56,8 @@ namespace WordsTelegramBot.Web
             #region Workers
 
             services.AddHostedService<TelegramBotWorker>();
+
+            services.AddHttpClient<KeepAliveWorker>();
             services.AddHostedService<KeepAliveWorker>();
 
             #endregion
