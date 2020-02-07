@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using WordsTelegramBot.Web.Database;
+using WordsTelegramBot.Web.Services.Commands.Common;
 
 namespace WordsTelegramBot.Web.Services.Commands
 {
@@ -25,10 +25,10 @@ namespace WordsTelegramBot.Web.Services.Commands
             _scopeFactory = scopeFactory;
             _conditions = new List<Predicate<Update>>
             {
-                IsUpdateMessage,
-                IsMessageNotNullOrEmpty,
-                IsMessageSingleWord,
-                IsMessageWord
+                Conditions.IsUpdateMessage,
+                Conditions.IsMessageNotNullOrEmpty,
+                Conditions.IsMessageSingleWord,
+                Conditions.IsMessageWord
             };
         }
 
@@ -38,32 +38,6 @@ namespace WordsTelegramBot.Web.Services.Commands
         {
             return _conditions.All(x => x.Invoke(update));
         }
-
-        #region Conditions
-
-        private bool IsUpdateMessage(Update update)
-        {
-            return update.Type == UpdateType.Message;
-        }
-
-        private bool IsMessageNotNullOrEmpty(Update update)
-        {
-            return !string.IsNullOrWhiteSpace(update.Message.Text);
-        }
-
-        private bool IsMessageSingleWord(Update update)
-        {
-            var splittedMessage = update.Message.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return splittedMessage.Length == 1;
-        }
-
-        private bool IsMessageWord(Update update)
-        {
-            var word = update.Message.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).SingleOrDefault();
-            return char.IsLetter(word.First());
-        }
-
-        #endregion
 
         public async Task ExecuteAsync(Update update)
         {

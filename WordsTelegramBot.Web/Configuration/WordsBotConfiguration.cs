@@ -4,6 +4,8 @@
     {
         public string TelegramApiToken { get; set; }
 
+        public string TelegramBotName { get; set; }
+
         public string ConnectionString { get; set; }
 
         public string DatabaseFileName { get; set; }
