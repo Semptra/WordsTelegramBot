@@ -23,6 +23,12 @@ namespace WordsTelegramBot.Web
                .AddEnvironmentVariables("WordsBotConfiguration_");
 
             Configuration = builder.Build();
+
+            System.Console.WriteLine(Configuration.ToString());
+            System.Console.WriteLine(System.Environment.GetEnvironmentVariable("WordsBotConfiguration_ConnectionString"));
+            System.Console.WriteLine(System.Environment.GetEnvironmentVariable("WordsBotConfiguration_KeepAliveUrl"));
+            System.Console.WriteLine(System.Environment.GetEnvironmentVariable("WordsBotConfiguration_TelegramApiToken"));
+            System.Console.WriteLine(System.Environment.GetEnvironmentVariable("WordsBotConfiguration_TelegramBotName"));
         }
 
         public IConfiguration Configuration { get; }
