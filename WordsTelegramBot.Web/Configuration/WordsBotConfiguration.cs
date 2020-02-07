@@ -10,6 +10,8 @@
 
         public string KeepAliveUrl { get; set; }
 
+        public string KeepAlivePeriod { get; set; }
+
         public string GetUpdatesPeriod { get; set; }
     }
 }

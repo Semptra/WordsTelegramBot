@@ -28,7 +28,7 @@ namespace WordsTelegramBot.Web.Workers
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(KeepAliveAsync, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _timer = new Timer(KeepAliveAsync, null, TimeSpan.Zero, TimeSpan.Parse(_configuration.KeepAlivePeriod));
 
             _logger.LogInformation("[{0}] started", nameof(KeepAliveWorker));
 
