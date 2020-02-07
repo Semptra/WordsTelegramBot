@@ -9,5 +9,7 @@
         public string DatabaseFileName { get; set; }
 
         public string KeepAliveUrl { get; set; }
+
+        public string GetUpdatesPeriod { get; set; }
     }
 }

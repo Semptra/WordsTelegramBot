@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -16,24 +17,24 @@ namespace WordsTelegramBot.Web.Services
 
         private readonly IList<ICommand> _commands;
 
-        private readonly TelegramDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        private readonly ITelegramBotClient _telegramBotClient;
-
-        public MessageProcessorService(ILogger<MessageProcessorService> logger, IEnumerable<ICommand> commands, TelegramDbContext context, ITelegramBotClient telegramBotClient)
+        public MessageProcessorService(ILogger<MessageProcessorService> logger, IEnumerable<ICommand> commands, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _commands = commands.ToList();
-            _context = context;
-            _telegramBotClient = telegramBotClient;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task ProcessUpdatesAsync()
         {
             _logger.LogInformation("Start processing updates");
 
-            var lastUpdate = await _context.Updates.SingleOrDefaultAsync();
-            var updates = await _telegramBotClient.GetUpdatesAsync(offset: lastUpdate?.LastUpdateId ?? -1);
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetService<TelegramDbContext>();
+            var telegramBotClient = scope.ServiceProvider.GetService<ITelegramBotClient>();
+            var lastUpdate = await context.Updates.SingleOrDefaultAsync();
+            var updates = await telegramBotClient.GetUpdatesAsync(offset: lastUpdate?.LastUpdateId ?? -1);
 
             _logger.LogInformation("Found {0} new updates", updates.Length);
 
@@ -44,7 +45,7 @@ namespace WordsTelegramBot.Web.Services
                     await ProcessUpdateAsync(update);
                 }
 
-                await SetLastUpdateAsync(updates.Last(), lastUpdate);
+                await SetLastUpdateAsync(updates.Last(), lastUpdate, context);
             }
 
             _logger.LogInformation("End processing updates");
@@ -65,7 +66,7 @@ namespace WordsTelegramBot.Web.Services
             }
         }
 
-        private async Task SetLastUpdateAsync(Update telegramLastUpdate, Database.Models.Update lastUpdate)
+        private async Task SetLastUpdateAsync(Update telegramLastUpdate, Database.Models.Update lastUpdate, TelegramDbContext context)
         {
             var newLastUpdateId = telegramLastUpdate.Id + 1;
             _logger.LogInformation("Setting last update id to {0}...", newLastUpdateId);
@@ -73,12 +74,14 @@ namespace WordsTelegramBot.Web.Services
             if (lastUpdate == null)
             {
                 lastUpdate = new Database.Models.Update { LastUpdateId = newLastUpdateId };
-                await _context.Updates.AddAsync(lastUpdate);
+                await context.Updates.AddAsync(lastUpdate);
             }
             else
             {
                 lastUpdate.LastUpdateId = newLastUpdateId;
             }
+
+            await context.SaveChangesAsync();
         }
     }
 }

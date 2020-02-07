@@ -1,8 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WordsTelegramBot.Web.Configuration;
 using WordsTelegramBot.Web.Services;
 
 namespace WordsTelegramBot.Web.Workers
@@ -11,31 +14,37 @@ namespace WordsTelegramBot.Web.Workers
     {
         private readonly ILogger _logger;
 
-        private readonly IStartupService _startupService;
+        private readonly WordsBotConfiguration _configuration;
 
-        private readonly IMessageProcessorService _messageProcessorService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         private Timer _timer;
 
-        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, IStartupService startupService, IMessageProcessorService messageProcessorService)
+        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, IOptions<WordsBotConfiguration> configuration, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
-            _startupService = startupService;
-            _messageProcessorService = messageProcessorService;
+            _configuration = configuration.Value;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _startupService.SetupAsync();
+            using var scope = _scopeFactory.CreateScope();
+            var startupService = scope.ServiceProvider.GetService<IStartupService>();
 
-            _timer = new Timer(ProcessUpdates, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            await startupService.SetupAsync();
+
+            _timer = new Timer(ProcessUpdates, null, TimeSpan.Zero, TimeSpan.Parse(_configuration.GetUpdatesPeriod));
 
             _logger.LogInformation("[{0}] started", nameof(TelegramBotWorker));
         }
 
         private async void ProcessUpdates(object state)
         {
-            await _messageProcessorService.ProcessUpdatesAsync();
+            using var scope = _scopeFactory.CreateScope();
+            var messageProcessorService = scope.ServiceProvider.GetService<IMessageProcessorService>();
+
+            await messageProcessorService.ProcessUpdatesAsync();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

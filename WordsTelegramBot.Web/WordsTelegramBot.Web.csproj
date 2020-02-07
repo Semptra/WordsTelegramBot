@@ -10,7 +10,7 @@
     <Folder Include="Database\" />
     <Folder Include="Database\Models\" />
     <Folder Include="Services\" />
-    <Folder Include="Workdes\" />
+    <Folder Include="Workres\" />
     <Folder Include="Services\Commands\" />
   </ItemGroup>
   <ItemGroup>

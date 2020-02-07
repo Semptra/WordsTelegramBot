@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Telegram.Bot;
-using WordsTelegramBot.Web.Configuration;
 using WordsTelegramBot.Web.Database;
 
 namespace WordsTelegramBot.Web.Services
@@ -11,32 +10,34 @@ namespace WordsTelegramBot.Web.Services
     {
         private readonly ILogger _logger;
 
-        private readonly ITelegramBotClient _telegramBotClient;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        private readonly TelegramDbContext _context;
-
-        public StartupService(ILogger<StartupService> logger, IOptions<WordsBotConfiguration> configuration, TelegramDbContext context)
+        public StartupService(ILogger<StartupService> logger, IServiceScopeFactory scopeFactory)
         {
-            _telegramBotClient = new TelegramBotClient(configuration.Value.TelegramApiToken);
             _logger = logger;
-            _context = context;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task SetupAsync()
         {
             _logger.LogInformation("Start setup");
 
+            using var scope = _scopeFactory.CreateScope();
+            var telegramBotClient = scope.ServiceProvider.GetService<ITelegramBotClient>();
+            var context = scope.ServiceProvider.GetService<TelegramDbContext>();
+
             _logger.LogInformation("Checking for existing telegram webhook...");
-            var webhookInfo = await _telegramBotClient.GetWebhookInfoAsync();
+
+            var webhookInfo = await telegramBotClient.GetWebhookInfoAsync();
             if (!string.IsNullOrEmpty(webhookInfo.Url))
             {
                 _logger.LogInformation("Webhook found with url {0}", webhookInfo.Url);
                 _logger.LogInformation("Deleting telegram webhook...");
-                await _telegramBotClient.DeleteWebhookAsync();
+                await telegramBotClient.DeleteWebhookAsync();
             }
 
             _logger.LogInformation("Creating database...");
-            await _context.Database.EnsureCreatedAsync();
+            await context.Database.EnsureCreatedAsync();
 
             _logger.LogInformation("Setup done");
         }

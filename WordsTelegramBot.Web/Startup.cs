@@ -8,6 +8,7 @@ using WordsTelegramBot.Web.Configuration;
 using WordsTelegramBot.Web.Services;
 using WordsTelegramBot.Web.Workers;
 using WordsTelegramBot.Web.Services.Commands;
+using Microsoft.Extensions.Options;
 
 namespace WordsTelegramBot.Web
 {
@@ -42,7 +43,7 @@ namespace WordsTelegramBot.Web
 
             #region Commands
 
-            services.AddSingleton<ICommand, WordCommand>();
+            services.AddScoped<ICommand, WordCommand>();
 
             #endregion
 
@@ -50,9 +51,11 @@ namespace WordsTelegramBot.Web
 
             services.AddHttpClient();
 
-            services.AddSingleton<ITelegramBotClient>(services => new TelegramBotClient(services.GetService<WordsBotConfiguration>().TelegramApiToken));
-            services.AddSingleton<IStartupService, StartupService>();
-            services.AddSingleton<IMessageProcessorService, MessageProcessorService>();
+            services.AddScoped<ITelegramBotClient>(services =>
+                new TelegramBotClient(services.GetService<IOptions<WordsBotConfiguration>>().Value.TelegramApiToken));
+
+            services.AddScoped<IStartupService, StartupService>();
+            services.AddScoped<IMessageProcessorService, MessageProcessorService>();
 
             #endregion
 
